@@ -30,51 +30,60 @@ def find_pdf_path(filename: str) -> Optional[Path]:
     return None
 
 
+def get_search_candidates(query: str) -> List[str]:
+    """Generate search candidates from query (exact text, number only, number with commas, etc.)."""
+    candidates = []
+    q_clean = query.strip()
+    if q_clean:
+        candidates.append(q_clean)
+
+    # Number with comma stripped
+    no_comma = q_clean.replace(',', '')
+    if no_comma != q_clean:
+        candidates.append(no_comma)
+
+    # Number with symbols/units stripped (%, ₹, $, per cent, mn, million)
+    stripped = re.sub(r'(?i)(?:%|₹|\$|per\s*cent|percent|million|mn|cr|crore|crores|b|billion|lakh|lakhs)', '', q_clean).strip()
+    if stripped and stripped not in candidates:
+        candidates.append(stripped)
+
+    # Extract all individual numbers/floats
+    num_matches = re.findall(r'\b\d[\d,]*(?:\.\d+)?\b', q_clean)
+    for n in num_matches:
+        if n not in candidates:
+            candidates.append(n)
+        n_plain = n.replace(',', '')
+        if n_plain not in candidates:
+            candidates.append(n_plain)
+
+    return candidates
+
+
 def find_best_page_and_rects(doc: fitz.Document, initial_page: int, query: Optional[str]) -> Tuple[int, List[fitz.Rect]]:
     """Resolve the true physical PDF page and precise bounding box coordinates for a metric query."""
     if not query or not query.strip():
         return max(0, min(initial_page, len(doc) - 1)), []
 
-    q = query.strip()
-    # Extract core numeric token (e.g. "6.25", "42.27", "740", "50,765.87")
-    num_match = re.search(r'[\d,]+(?:\.\d+)?', q)
-    num_str = num_match.group(0) if num_match else ''
-    num_clean = num_str.replace(',', '')
+    candidates = get_search_candidates(query)
 
-    # 1. Try initial specified page
+    # 1. Check specified initial page FIRST with all candidates
     if 0 <= initial_page < len(doc):
         p = doc[initial_page]
-        # Exact query match
-        rects = p.search_for(q)
-        if rects:
-            return initial_page, rects
-        # Number with unit
-        if num_str and len(num_str) >= 2:
-            rects = p.search_for(num_str)
-            if rects:
-                return initial_page, rects
-        if num_clean and num_clean != num_str and len(num_clean) >= 2:
-            rects = p.search_for(num_clean)
-            if rects:
-                return initial_page, rects
+        for c in candidates:
+            if len(c) >= 2:
+                rects = p.search_for(c)
+                if rects:
+                    return initial_page, rects
 
-    # 2. Scan document to find the exact matching page (handles printed page vs physical page offset)
-    for idx, p in enumerate(doc):
-        rects = p.search_for(q)
-        if rects:
-            return idx, rects
-
-    if num_str and len(num_str) >= 2:
-        for idx, p in enumerate(doc):
-            rects = p.search_for(num_str)
-            if rects:
-                return idx, rects
-            if num_clean and num_clean != num_str:
-                rects = p.search_for(num_clean)
+    # 2. Scan entire document for candidates (exact candidate match first, then numbers)
+    for c in candidates:
+        if len(c) >= 2:
+            for idx, p in enumerate(doc):
+                rects = p.search_for(c)
                 if rects:
                     return idx, rects
 
-    # Fallback to initial page without bogus partial-word rects
+    # Fallback to initial page
     return max(0, min(initial_page, len(doc) - 1)), []
 
 
@@ -85,7 +94,7 @@ def render_annotated_page_image(
     color_type: str = "contradiction",
     dpi: int = 150,
 ) -> Optional[bytes]:
-    """Render a PDF page to PNG with highlighted bounding boxes."""
+    """Render a PDF page to PNG with high-visibility highlighted bounding boxes."""
     pdf_path = find_pdf_path(filename)
     if not pdf_path or not pdf_path.exists():
         return None
@@ -98,34 +107,35 @@ def render_annotated_page_image(
         resolved_page_idx, rects_to_highlight = find_best_page_and_rects(doc, target_page_idx, highlight_text)
         page = doc[resolved_page_idx]
 
-        # Colors for annotations (RGB tuple 0.0 - 1.0)
+        # Colors for high-visibility annotations
         color_palette = {
             "contradiction": {
                 "stroke": (0.93, 0.15, 0.15),  # Crimson Red
-                "fill": (1.0, 0.85, 0.85),
+                "fill": (1.0, 0.78, 0.78),
             },
             "corroboration": {
-                "stroke": (0.09, 0.63, 0.36),  # Emerald Green
-                "fill": (0.85, 0.98, 0.90),
+                "stroke": (0.05, 0.70, 0.32),  # Vivid Emerald Green
+                "fill": (0.75, 1.0, 0.82),
             },
             "reconciliation": {
-                "stroke": (0.58, 0.20, 0.83),  # Royal Purple
-                "fill": (0.94, 0.88, 1.0),
+                "stroke": (0.60, 0.15, 0.88),  # Royal Purple
+                "fill": (0.92, 0.82, 1.0),
             },
             "default": {
-                "stroke": (0.15, 0.38, 0.92),  # Blue
-                "fill": (0.85, 0.92, 1.0),
+                "stroke": (0.15, 0.40, 0.95),  # Royal Blue
+                "fill": (0.80, 0.90, 1.0),
             }
         }
         colors = color_palette.get(color_type.lower(), color_palette["default"])
 
-        # Draw highlight annotations onto page
+        # Draw high-visibility highlight annotations onto page
         for r in rects_to_highlight[:5]:
-            pad_rect = fitz.Rect(r.x0 - 4, r.y0 - 2, r.x1 + 4, r.y1 + 2)
+            # Generous bounding box halo padding so the highlight is unmistakable
+            pad_rect = fitz.Rect(r.x0 - 8, r.y0 - 5, r.x1 + 8, r.y1 + 5)
             annot = page.add_rect_annot(pad_rect)
             annot.set_colors(stroke=colors["stroke"], fill=colors["fill"])
-            annot.set_border(width=3.0)
-            annot.set_opacity(0.85)
+            annot.set_border(width=4.0)
+            annot.set_opacity(0.92)
             annot.update()
 
         # Render page to PNG pixmap
