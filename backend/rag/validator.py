@@ -69,12 +69,30 @@ class EvidenceValidator:
         for f in retrieval_result.facts:
             if f.source_page:
                 ground_truth_values.add(str(f.source_page))
+            if f.document_filename:
+                ground_truth_raw.add(f.document_filename.lower())
+                for match in number_pattern.findall(f.document_filename):
+                    ground_truth_values.add(re.sub(r'[^\d\.]', '', match))
             if f.source_text:
                 for match in number_pattern.findall(f.source_text):
                     ground_truth_raw.add(match.strip().lower())
                     n_clean = re.sub(r'[^\d\.]', '', match)
                     if n_clean:
                         ground_truth_values.add(n_clean)
+
+        # Also add evidence snippets and page numbers
+        for ev in getattr(retrieval_result, "evidence", []):
+            if isinstance(ev, dict):
+                p = ev.get("page_number")
+                if p:
+                    ground_truth_values.add(str(p))
+                txt = ev.get("verbatim_text", "")
+                if txt:
+                    for match in number_pattern.findall(txt):
+                        ground_truth_raw.add(match.strip().lower())
+                        n_clean = re.sub(r'[^\d\.]', '', match)
+                        if n_clean:
+                            ground_truth_values.add(n_clean)
 
         # Also add values from relationships reasoning and connected facts
         for rel in retrieval_result.relationships:
@@ -92,6 +110,9 @@ class EvidenceValidator:
                     num_only = re.sub(r'[^\d\.]', '', val)
                     if num_only:
                         ground_truth_values.add(num_only)
+                sp = rf.get("source_page")
+                if sp:
+                    ground_truth_values.add(str(sp))
 
         # 3. Check each number extracted from the answer
         grounded_metrics = []

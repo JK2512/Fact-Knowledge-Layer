@@ -29,6 +29,9 @@ from backend.fact_extractor import FactExtractor
 from backend.fact_linker import FactLinker
 from backend.rag.rag_engine import RAGEngine
 from backend.graph import EvidenceGraph
+from backend.reconciliation import build_reconciliation_matrix
+from backend.dossier_generator import generate_audit_dossier
+from backend.benchmarks.evaluator import FactBenchmarkEvaluator
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -319,6 +322,38 @@ def get_evidence_graph(
         limit_nodes=limit,
     )
     return JSONResponse(data)
+
+
+# ── Reconciliation Matrix ───────────────────────────────────────────────────────
+
+@app.get("/api/reconciliation-matrix")
+def get_reconciliation_matrix():
+    """Retrieve cross-document comparative reconciliation matrix for corporate & macro metrics."""
+    data = build_reconciliation_matrix()
+    return JSONResponse(data)
+
+
+# ── Quantitative Benchmarking ──────────────────────────────────────────────────
+
+@app.get("/api/benchmark")
+def get_system_benchmark():
+    """Run quantitative benchmark evaluation and return faithfulness & precision scorecard."""
+    evaluator = FactBenchmarkEvaluator()
+    data = evaluator.run_evaluations()
+    return JSONResponse(data)
+
+
+# ── Compliance & Due Diligence Dossier ──────────────────────────────────────────
+
+class DossierRequest(BaseModel):
+    query: Optional[str] = None
+
+@app.post("/api/export-dossier")
+def export_audit_dossier(req: Optional[DossierRequest] = None):
+    """Generate executive due-diligence audit dossier with cryptographic provenance."""
+    q_str = req.query if req else None
+    dossier = generate_audit_dossier(q_str)
+    return JSONResponse(dossier)
 
 
 # ── Entry point ────────────────────────────────────────────────────────────────
