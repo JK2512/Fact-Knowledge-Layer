@@ -5,8 +5,9 @@ for side-by-side visual document comparison and evidence auditing.
 """
 
 import io
+import re
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
 import fitz  # PyMuPDF
 
 from backend.config import UPLOAD_DIR, DATA_DIR
@@ -29,6 +30,54 @@ def find_pdf_path(filename: str) -> Optional[Path]:
     return None
 
 
+def find_best_page_and_rects(doc: fitz.Document, initial_page: int, query: Optional[str]) -> Tuple[int, List[fitz.Rect]]:
+    """Resolve the true physical PDF page and precise bounding box coordinates for a metric query."""
+    if not query or not query.strip():
+        return max(0, min(initial_page, len(doc) - 1)), []
+
+    q = query.strip()
+    # Extract core numeric token (e.g. "6.25", "42.27", "740", "50,765.87")
+    num_match = re.search(r'[\d,]+(?:\.\d+)?', q)
+    num_str = num_match.group(0) if num_match else ''
+    num_clean = num_str.replace(',', '')
+
+    # 1. Try initial specified page
+    if 0 <= initial_page < len(doc):
+        p = doc[initial_page]
+        # Exact query match
+        rects = p.search_for(q)
+        if rects:
+            return initial_page, rects
+        # Number with unit
+        if num_str and len(num_str) >= 2:
+            rects = p.search_for(num_str)
+            if rects:
+                return initial_page, rects
+        if num_clean and num_clean != num_str and len(num_clean) >= 2:
+            rects = p.search_for(num_clean)
+            if rects:
+                return initial_page, rects
+
+    # 2. Scan document to find the exact matching page (handles printed page vs physical page offset)
+    for idx, p in enumerate(doc):
+        rects = p.search_for(q)
+        if rects:
+            return idx, rects
+
+    if num_str and len(num_str) >= 2:
+        for idx, p in enumerate(doc):
+            rects = p.search_for(num_str)
+            if rects:
+                return idx, rects
+            if num_clean and num_clean != num_str:
+                rects = p.search_for(num_clean)
+                if rects:
+                    return idx, rects
+
+    # Fallback to initial page without bogus partial-word rects
+    return max(0, min(initial_page, len(doc) - 1)), []
+
+
 def render_annotated_page_image(
     filename: str,
     page_num: int,
@@ -43,10 +92,11 @@ def render_annotated_page_image(
 
     try:
         doc = fitz.open(str(pdf_path))
-        if page_num < 1 or page_num > len(doc):
-            page_num = max(1, min(page_num, len(doc)))
-        
-        page = doc[page_num - 1]
+        target_page_idx = max(0, min(page_num - 1, len(doc) - 1))
+
+        # Resolve exact physical page and bounding box coordinates
+        resolved_page_idx, rects_to_highlight = find_best_page_and_rects(doc, target_page_idx, highlight_text)
+        page = doc[resolved_page_idx]
 
         # Colors for annotations (RGB tuple 0.0 - 1.0)
         color_palette = {
@@ -69,30 +119,12 @@ def render_annotated_page_image(
         }
         colors = color_palette.get(color_type.lower(), color_palette["default"])
 
-        # Search for rects
-        rects_to_highlight = []
-        if highlight_text and highlight_text.strip():
-            query = highlight_text.strip()
-            # 1. Exact search
-            rects = page.search_for(query)
-            if rects:
-                rects_to_highlight.extend(rects)
-            else:
-                # 2. Search for clean numeric tokens or words
-                tokens = [t for t in query.replace("₹", "").replace("%", "").replace(",", "").split() if len(t) >= 2]
-                for t in tokens[:3]:
-                    t_rects = page.search_for(t)
-                    if t_rects:
-                        rects_to_highlight.extend(t_rects)
-                        break
-
         # Draw highlight annotations onto page
         for r in rects_to_highlight[:5]:
-            # Add small padding to rect for visual prominence
             pad_rect = fitz.Rect(r.x0 - 4, r.y0 - 2, r.x1 + 4, r.y1 + 2)
             annot = page.add_rect_annot(pad_rect)
             annot.set_colors(stroke=colors["stroke"], fill=colors["fill"])
-            annot.set_border(width=2.5)
+            annot.set_border(width=3.0)
             annot.set_opacity(0.85)
             annot.update()
 
