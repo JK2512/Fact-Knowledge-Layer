@@ -1886,3 +1886,110 @@ html, body {
   font-style: italic;
 }
 
+/* ── Split-Screen Visual PDF Diff Modal ────────────────────────────────────── */
+.visual-diff-card {
+  max-width: 1050px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.diff-reasoning-banner {
+  background: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: #92400e;
+  line-height: 1.4;
+  margin-bottom: 14px;
+}
+
+.split-diff-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.split-diff-pane {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.diff-pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+}
+
+.diff-value-pill {
+  background: #fee2e2;
+  color: #991b1b;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.diff-value-pill.corroborated {
+  background: #dcfce7;
+  color: #166534;
+  border-color: rgba(22, 101, 52, 0.2);
+}
+
+.diff-value-pill.reconciliation {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border-color: rgba(107, 33, 168, 0.2);
+}
+
+.diff-img-wrapper {
+  overflow-y: auto;
+  max-height: 520px;
+  padding: 12px;
+  background: #e2e8f0;
+  display: flex;
+  justify-content: center;
+}
+
+.diff-page-img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background: #ffffff;
+}
+
+.btn-visual-diff {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-visual-diff:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+

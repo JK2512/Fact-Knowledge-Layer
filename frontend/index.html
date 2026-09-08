@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/styles.css?v=13" />
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M16 6L6 11L16 16L26 11L16 6Z' fill='%23ffffff'/%3E%3Cpath d='M6 16L16 21L26 16' stroke='%2393c5fd' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M6 21L16 26L26 21' stroke='%23bfdbfe' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/static/styles.css?v=14" />
 </head>
 <body>
 
@@ -606,6 +608,59 @@
 
   </div>
 
+  <!-- Split-Screen Visual PDF Diff Modal -->
+  <div class="modal-backdrop" id="visualDiffModal">
+    <div class="modal-card visual-diff-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.4rem;">🖼️</span>
+          <div>
+            <h3 class="modal-title" id="diffModalTitle">Visual Evidence Comparison & Page Coordinates</h3>
+            <p style="margin:0; font-size:0.75rem; color:var(--text-muted);" id="diffModalSub">Side-by-side original PDF page images with highlighted bounding-box coordinate proof</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <span class="rel-type-badge contradiction" id="diffRelTypeBadge">Contradiction</span>
+          <button class="modal-close" id="diffModalCloseBtn">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding:16px;">
+        <div class="diff-reasoning-banner" id="diffReasoningBanner">
+          ⚠️ Sources report differing values for this metric on the same reporting period.
+        </div>
+        <div class="split-diff-container">
+          <!-- Left Pane: Document 1 -->
+          <div class="split-diff-pane">
+            <div class="diff-pane-header">
+              <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;">
+                <strong id="diffDoc1Title" style="font-size:0.8rem;">Document 1</strong>
+                <div style="font-size:0.7rem; color:var(--text-muted);" id="diffDoc1Page">Page 1</div>
+              </div>
+              <div class="diff-value-pill" id="diffDoc1Value">--</div>
+            </div>
+            <div class="diff-img-wrapper" id="diffDoc1ImgWrapper">
+              <img class="diff-page-img" id="diffDoc1Img" src="" alt="Source Page 1" />
+            </div>
+          </div>
+
+          <!-- Right Pane: Document 2 -->
+          <div class="split-diff-pane">
+            <div class="diff-pane-header">
+              <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;">
+                <strong id="diffDoc2Title" style="font-size:0.8rem;">Document 2</strong>
+                <div style="font-size:0.7rem; color:var(--text-muted);" id="diffDoc2Page">Page 1</div>
+              </div>
+              <div class="diff-value-pill" id="diffDoc2Value">--</div>
+            </div>
+            <div class="diff-img-wrapper" id="diffDoc2ImgWrapper">
+              <img class="diff-page-img" id="diffDoc2Img" src="" alt="Source Page 2" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Evidence Inspector Modal -->
   <div class="modal-backdrop" id="evidenceModal">
     <div class="modal-card">
@@ -627,8 +682,6 @@
         </div>
       </div>
     </div>
-  </div>
-
   </div>
 
   <!-- Loading Overlay -->

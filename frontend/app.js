@@ -33,6 +33,7 @@
     initMatrix();
     initBenchmark();
     initEvidenceModal();
+    initVisualDiffModal();
     initExportDossier();
     initAsk();
     initGraph();
@@ -469,6 +470,11 @@
               </ul>
             </div>
           ` : ''}
+          <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+            <button class="btn-visual-diff" onclick="window.openVisualDiff('${escHtml(rel.id)}')">
+              🖼️ Visual Page Diff & Highlights
+            </button>
+          </div>
         </div>`;
     }).join('');
   }
@@ -1289,6 +1295,76 @@
       });
     });
   });
+
+  // ── Split-Screen Visual PDF Diff Modal ──────────────────────────────────
+
+  function initVisualDiffModal() {
+    const modal = $('#visualDiffModal');
+    const closeBtn = $('#diffModalCloseBtn');
+    if (!modal) return;
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+    }
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('active');
+    });
+
+    window.openVisualDiff = async (relId) => {
+      showLoading('Rendering side-by-side visual PDF pages with highlighted coordinates...');
+      try {
+        const res = await fetch(`${API}/api/visual-diff/pair?relationship_id=${encodeURIComponent(relId)}`);
+        if (!res.ok) throw new Error('Visual diff pair not found for this relationship');
+        const data = await res.json();
+
+        const badge = $('#diffRelTypeBadge');
+        if (badge) {
+          badge.textContent = typeLabel(data.relationship_type);
+          badge.className = `rel-type-badge ${data.relationship_type}`;
+        }
+
+        const banner = $('#diffReasoningBanner');
+        if (banner) {
+          banner.textContent = data.reasoning || 'Cross-document relationship comparison.';
+        }
+
+        const d1 = data.doc1 || {};
+        const d2 = data.doc2 || {};
+
+        const doc1Title = $('#diffDoc1Title');
+        const doc1Page = $('#diffDoc1Page');
+        const doc1Val = $('#diffDoc1Value');
+        const doc1Img = $('#diffDoc1Img');
+
+        if (doc1Title) doc1Title.textContent = d1.filename || 'Document 1';
+        if (doc1Page) doc1Page.textContent = `Page ${d1.page} coordinate proof`;
+        if (doc1Val) {
+          doc1Val.textContent = d1.value || '--';
+          doc1Val.className = `diff-value-pill ${data.relationship_type}`;
+        }
+        if (doc1Img) doc1Img.src = d1.image_url;
+
+        const doc2Title = $('#diffDoc2Title');
+        const doc2Page = $('#diffDoc2Page');
+        const doc2Val = $('#diffDoc2Value');
+        const doc2Img = $('#diffDoc2Img');
+
+        if (doc2Title) doc2Title.textContent = d2.filename || 'Document 2';
+        if (doc2Page) doc2Page.textContent = `Page ${d2.page} coordinate proof`;
+        if (doc2Val) {
+          doc2Val.textContent = d2.value || '--';
+          doc2Val.className = `diff-value-pill ${data.relationship_type}`;
+        }
+        if (doc2Img) doc2Img.src = d2.image_url;
+
+        modal.classList.add('active');
+      } catch (err) {
+        toast(`Visual diff error: ${err.message}`, 'error');
+      }
+      hideLoading();
+    };
+  }
 
   function escHtml(str) {
     if (!str) return '';

@@ -8,10 +8,9 @@ import shutil
 import logging
 from pathlib import Path
 from typing import Optional
-
 from pydantic import BaseModel
-from fastapi import FastAPI, UploadFile, File, HTTPException, Query
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, UploadFile, File, HTTPException, Query, Response
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -32,6 +31,7 @@ from backend.graph import EvidenceGraph
 from backend.reconciliation import build_reconciliation_matrix
 from backend.dossier_generator import generate_audit_dossier
 from backend.benchmarks.evaluator import FactBenchmarkEvaluator
+from backend.visual_diff import render_annotated_page_image, get_visual_comparison_pair
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -71,6 +71,14 @@ def serve_ui():
     if index_path.exists():
         return index_path.read_text(encoding="utf-8")
     return "<h1>Fact Knowledge Layer</h1><p>Frontend not found.</p>"
+
+@app.get("/favicon.ico")
+@app.get("/favicon.svg")
+def serve_favicon():
+    fav_path = FRONTEND_DIR / "favicon.svg"
+    if fav_path.exists():
+        return FileResponse(fav_path, media_type="image/svg+xml")
+    return HTMLResponse("", status_code=204)
 
 
 # ── Upload & Process ───────────────────────────────────────────────────────────
@@ -354,6 +362,38 @@ def export_audit_dossier(req: Optional[DossierRequest] = None):
     q_str = req.query if req else None
     dossier = generate_audit_dossier(q_str)
     return JSONResponse(dossier)
+
+
+# ── Visual Document Diff & Page Annotations ────────────────────────────────────
+
+@app.get("/api/visual-diff/page")
+def get_annotated_page_image(
+    document: str = Query(...),
+    page: int = Query(1),
+    highlight: Optional[str] = Query(None),
+    color: str = Query("contradiction"),
+    dpi: int = Query(150),
+):
+    """Render high-resolution PDF page image with highlighted bounding boxes."""
+    img_bytes = render_annotated_page_image(
+        filename=document,
+        page_num=page,
+        highlight_text=highlight,
+        color_type=color,
+        dpi=dpi,
+    )
+    if not img_bytes:
+        raise HTTPException(404, f"Could not render page {page} of {document}")
+    return Response(content=img_bytes, media_type="image/png")
+
+
+@app.get("/api/visual-diff/pair")
+def get_relationship_visual_pair(relationship_id: str = Query(...)):
+    """Retrieve side-by-side visual comparison payload for a cross-document relationship."""
+    pair = get_visual_comparison_pair(relationship_id)
+    if not pair:
+        raise HTTPException(404, "Visual comparison pair not available for this relationship")
+    return JSONResponse(pair)
 
 
 # ── Entry point ────────────────────────────────────────────────────────────────
