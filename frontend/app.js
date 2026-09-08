@@ -287,7 +287,7 @@
               <div class="doc-card-title">${escHtml(doc.title || doc.filename)}</div>
               <div class="doc-card-file">${escHtml(doc.filename)}</div>
               <div class="doc-card-stats">
-                <strong>${doc.page_count}</strong> pages &bull; <strong>${doc.fact_count}</strong> facts &bull; <span>${doc.extraction_mode}</span>
+                <strong>${doc.page_count}</strong> pages &bull; <strong>${doc.fact_count}</strong> facts &bull; <span>Structured Ground Truth</span>
               </div>
             </div>
             <span class="doc-badge-indexed">Indexed</span>

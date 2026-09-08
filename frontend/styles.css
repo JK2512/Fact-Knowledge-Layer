@@ -496,30 +496,33 @@ html, body {
   color: var(--text-muted);
 }
 
-.mode-toggle-group {
-  display: flex;
-  background: var(--bg-subtle);
-  padding: 3px;
-  border-radius: 8px;
-  gap: 2px;
-}
-
-.mode-toggle-btn {
-  border: none;
-  background: transparent;
+.engine-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.74rem;
+  font-weight: 700;
   padding: 4px 10px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  border-radius: 12px;
+  letter-spacing: 0.02em;
 }
 
-.mode-toggle-btn.active {
-  background: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+.engine-badge-dot {
+  width: 7px;
+  height: 7px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 6px #22c55e;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
 }
 
 .ask-input-row {
