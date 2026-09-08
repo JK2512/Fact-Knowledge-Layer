@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fact Knowledge Layer — Cross-Document Fact Analysis</title>
+  <meta name="description" content="Extract facts. Reconcile across sources. Get grounded answers." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css?v=13" />
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- Left Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#3b82f6" />
+            <path d="M2 12L12 17L22 12" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="sidebar-brand">
+          <div class="brand-title">Fact Knowledge Layer</div>
+          <div class="brand-sub">Evidence first. Answers you can trust.</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item tab-btn active" data-tab="ask">
+          <span class="nav-icon">💬</span>
+          <span class="nav-text">Ask & Explore</span>
+        </button>
+        <button class="nav-item tab-btn" data-tab="upload">
+          <span class="nav-icon">📤</span>
+          <span class="nav-text">Upload Documents</span>
+        </button>
+        <button class="nav-item tab-btn" data-tab="documents">
+          <span class="nav-icon">📄</span>
+          <span class="nav-text">Documents</span>
+        </button>
+        <button class="nav-item tab-btn" data-tab="facts">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Facts Explorer</span>
+        </button>
+        <button class="nav-item tab-btn" data-tab="relationships">
+          <span class="nav-icon">🔗</span>
+          <span class="nav-text">Relationships</span>
+        </button>
+        <button class="nav-item tab-btn" data-tab="graph">
+          <span class="nav-icon">🕸</span>
+          <span class="nav-text">Evidence Graph</span>
+        </button>
+        <button class="nav-item tab-btn" data-tab="failures">
+          <span class="nav-icon">⚠️</span>
+          <span class="nav-text">Failures / Issues</span>
+        </button>
+        <button class="nav-item tab-btn" data-tab="settings">
+          <span class="nav-icon">⚙</span>
+          <span class="nav-text">Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-status-box">
+          <div class="status-indicator">
+            <span class="status-dot"></span>
+            <span class="status-text"><strong id="sidebarDocCount">6</strong> documents indexed</span>
+          </div>
+          <div class="status-timestamp" id="sidebarTimestamp">Last analyzed Today</div>
+          <button class="btn btn-reanalyze" id="reanalyzeBtn" title="Re-run cross-document analysis">
+            🔄 Re-Analyze
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+
+      <!-- Top Header Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <h1 class="main-title">Financial Documents, Connected</h1>
+          <p class="main-subtitle">Extract facts. Reconcile across sources. Get grounded answers.</p>
+        </div>
+
+        <div class="header-right">
+          <div class="global-search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="globalSearchInput" placeholder="Search documents, facts or ask a question..." />
+            <kbd class="search-shortcut">Ctrl K</kbd>
+          </div>
+
+          <div class="user-profile-pill">
+            <div class="user-avatar">JK</div>
+            <span class="user-name">Jiya Kathuria</span>
+            <span class="dropdown-chevron">▾</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Top Stats Bar -->
+      <section class="stats-bar" id="statsBar">
+        <div class="stat-card blue">
+          <div class="stat-icon-wrap blue-bg">📄</div>
+          <div class="stat-content">
+            <div class="stat-value-row">
+              <span class="stat-val" id="statDocs">0</span>
+              <span class="stat-delta">▲ +0</span>
+            </div>
+            <div class="stat-title">Documents</div>
+            <div class="stat-desc">Total PDF files ingested</div>
+          </div>
+        </div>
+
+        <div class="stat-card purple">
+          <div class="stat-icon-wrap purple-bg">📋</div>
+          <div class="stat-content">
+            <div class="stat-value-row">
+              <span class="stat-val" id="statFacts">0</span>
+              <span class="stat-delta">▲ +0</span>
+            </div>
+            <div class="stat-title">Facts Extracted</div>
+            <div class="stat-desc">Structured factual statements</div>
+          </div>
+        </div>
+
+        <div class="stat-card green">
+          <div class="stat-icon-wrap green-bg">✓</div>
+          <div class="stat-content">
+            <div class="stat-value-row">
+              <span class="stat-val" id="statCorr">0</span>
+              <span class="stat-delta">▲ +0</span>
+            </div>
+            <div class="stat-title">Corroborations</div>
+            <div class="stat-desc">Facts supported by multiple sources</div>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <div class="stat-icon-wrap red-bg">⚠</div>
+          <div class="stat-content">
+            <div class="stat-value-row">
+              <span class="stat-val" id="statContra">0</span>
+              <span class="stat-delta">▲ +0</span>
+            </div>
+            <div class="stat-title">Contradictions</div>
+            <div class="stat-desc">Conflicting claims across sources</div>
+          </div>
+        </div>
+
+        <div class="stat-card amber">
+          <div class="stat-icon-wrap amber-bg">🔗</div>
+          <div class="stat-content">
+            <div class="stat-value-row">
+              <span class="stat-val" id="statRecon">0</span>
+              <span class="stat-delta">▲ +0</span>
+            </div>
+            <div class="stat-title">Reconciliations</div>
+            <div class="stat-desc">Contextual differences explained</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dynamic Tab Panels -->
+
+      <!-- TAB 1: Ask & Explore (Main Dashboard View) -->
+      <div class="tab-panel active" id="tab-ask">
+        <div class="dashboard-grid">
+
+          <!-- Left Main Column (Query & Answer) -->
+          <div class="dash-main-col">
+
+            <!-- Ask Knowledge Base Card -->
+            <div class="dash-card ask-card" id="askCard">
+              <div class="card-header-flex">
+                <div class="card-title-group">
+                  <div class="card-heading-icon">✨</div>
+                  <div>
+                    <h2 class="card-heading">Ask the Knowledge Base</h2>
+                    <p class="card-subheading">Ask natural language questions across all your financial documents</p>
+                  </div>
+                </div>
+                <div class="mode-toggle-group">
+                  <button class="mode-toggle-btn active" id="modeRuleBtn">Rule-based</button>
+                  <button class="mode-toggle-btn" id="modeLlmBtn">LLM (Gemini)</button>
+                  <span id="modeBadge" style="display:none;">rule-based</span>
+                </div>
+              </div>
+
+              <div class="ask-input-row">
+                <input type="text" class="ask-main-input" id="askInput" placeholder="e.g. Do the sources agree on India's FY25 real GDP growth?" />
+                <button class="btn btn-ask" id="askBtn">
+                  <span>Ask</span>
+                  <span class="btn-arrow">→</span>
+                </button>
+              </div>
+
+              <div class="query-chips-section">
+                <span class="chips-label">Try these example queries:</span>
+                <div class="chips-flex">
+                  <button class="chip-btn" data-query="Which sources corroborate Delhivery's FY24 express parcel shipment volume?">
+                    🚚 Delhivery FY24 shipments
+                  </button>
+                  <button class="chip-btn" data-query="Do the sources agree on India's FY25 real GDP growth?">
+                    ⚠️ India's FY25 GDP growth
+                  </button>
+                  <button class="chip-btn" data-query="Why do the fiscal deficit figures differ across the sources?">
+                    📊 Fiscal deficit comparison
+                  </button>
+                  <button class="chip-btn" data-query="Can the 81,417.43 revenue value be safely interpreted?">
+                    ❓ 81,417.43 revenue value
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Grounded Answer Result View -->
+            <div class="rag-result-container" id="ragResultContainer" style="display: none;">
+              
+              <!-- Answer Card -->
+              <div class="dash-card answer-card">
+                <div class="answer-header-row">
+                  <div class="answer-title-group">
+                    <span class="answer-sparkle">⚛</span>
+                    <span class="answer-heading">Answer</span>
+                    <span class="val-badge" id="ragValBadge">✓ VERIFIED</span>
+                  </div>
+                  <div class="answer-meta-group">
+                    <span class="latency-badge" id="ragLatency">771 ms</span>
+                    <span class="conf-badge high" id="ragConfBadge" title="Calculated Evidence Confidence">High Confidence (95%)</span>
+                  </div>
+                </div>
+
+                <div class="answer-body-text" id="ragAnswerText"></div>
+
+                <!-- Corroboration / Reconciliation Summary Callout -->
+                <div class="answer-callout" id="ragSummaryCallout" style="display:none;">
+                  <span class="callout-icon" id="ragCalloutIcon">✓</span>
+                  <span class="callout-text" id="ragCalloutText"></span>
+                </div>
+
+                <!-- 4 Mini Telemetry Cards -->
+                <div class="mini-telemetry-row">
+                  <div class="mini-tel-card">
+                    <div class="mini-tel-icon">📄</div>
+                    <div class="mini-tel-content">
+                      <div class="mini-tel-val" id="ragFactsCount">0</div>
+                      <div class="mini-tel-lbl">Facts Used</div>
+                    </div>
+                  </div>
+                  <div class="mini-tel-card">
+                    <div class="mini-tel-icon">🔗</div>
+                    <div class="mini-tel-content">
+                      <div class="mini-tel-val" id="ragRelCount">0</div>
+                      <div class="mini-tel-lbl">Related Facts</div>
+                    </div>
+                  </div>
+                  <div class="mini-tel-card">
+                    <div class="mini-tel-icon">📚</div>
+                    <div class="mini-tel-content">
+                      <div class="mini-tel-val" id="ragSourceDocsCount">2</div>
+                      <div class="mini-tel-lbl">Source Documents</div>
+                    </div>
+                  </div>
+                  <div class="mini-tel-card">
+                    <div class="mini-tel-icon">🟢</div>
+                    <div class="mini-tel-content">
+                      <div class="mini-tel-val" id="ragClaimsVerifiedCount">11</div>
+                      <div class="mini-tel-lbl">Numerical Claims Verified</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Source Citations Section -->
+                <div class="source-citations-wrap">
+                  <div class="citations-header">
+                    <span class="citations-title">ℹ Source Citations</span>
+                    <span class="citations-action">View in Document</span>
+                  </div>
+                  <div class="citations-list" id="ragCitationsList"></div>
+                </div>
+
+                <!-- Collapsible Ground Truth Facts Used -->
+                <details class="rag-details" open>
+                  <summary class="rag-details-summary">
+                    <span>📋 Ground Truth Facts Used (<span id="ragFactsCountSub">0</span>)</span>
+                  </summary>
+                  <div class="rag-facts-grid" id="ragFactsGrid"></div>
+                </details>
+
+                <!-- Collapsible Relationships -->
+                <details class="rag-details" open id="ragRelSection">
+                  <summary class="rag-details-summary">
+                    <span>🔗 Cross-Document Relationships (<span id="ragRelCountSub">0</span>)</span>
+                  </summary>
+                  <div class="rag-rels-list" id="ragRelsList"></div>
+                </details>
+
+                <div class="rag-audit-note" id="ragAuditNote"></div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Right Sidebar Widgets -->
+          <div class="dash-side-col">
+
+            <!-- Ingested Documents Widget -->
+            <div class="dash-card widget-card">
+              <div class="widget-header">
+                <h3 class="widget-title">Ingested Documents</h3>
+                <button class="btn-ghost-sm" id="widgetUploadBtn">+ Upload PDF</button>
+              </div>
+
+              <div class="widget-doc-list" id="widgetDocList">
+                <!-- Dynamically populated -->
+              </div>
+
+              <div class="widget-footer">
+                <button class="link-btn" id="viewAllDocsBtn">View all documents →</button>
+              </div>
+            </div>
+
+            <!-- Fact Relationship Graph Widget -->
+            <div class="dash-card widget-card">
+              <div class="widget-header">
+                <h3 class="widget-title">Fact Relationship Graph</h3>
+                <button class="link-btn" id="viewFullGraphBtn">View Full Graph →</button>
+              </div>
+
+              <div class="widget-graph-legend">
+                <span class="w-leg-item"><span class="w-leg-dot" style="background:#3b82f6;"></span> Document</span>
+                <span class="w-leg-item"><span class="w-leg-dot" style="background:#10b981;"></span> Fact</span>
+                <span class="w-leg-item"><span class="w-leg-dot" style="background:#22c55e;"></span> Corroboration</span>
+                <span class="w-leg-item"><span class="w-leg-dot" style="background:#ef4444;"></span> Contradiction</span>
+                <span class="w-leg-item"><span class="w-leg-dot" style="background:#f59e0b;"></span> Reconciliation</span>
+              </div>
+
+              <div class="widget-graph-wrap">
+                <canvas id="widgetGraphCanvas" width="480" height="260"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB 2: Upload Documents -->
+      <div class="tab-panel" id="tab-upload">
+        <div class="dash-card upload-page-card">
+          <h2 class="card-heading" style="margin-bottom: 6px;">Upload Financial Documents</h2>
+          <p class="card-subheading" style="margin-bottom: 20px;">Ingest annual reports, earnings presentations, and economic surveys into the Fact Knowledge Layer.</p>
+
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">
+              <strong>Drag & drop PDF files</strong> or click to browse
+            </div>
+            <div class="upload-hint">Supports any PDF — financial reports, balance sheets, economic surveys</div>
+            <input type="file" id="fileInput" class="upload-input" accept=".pdf" multiple />
+            <div class="upload-progress" id="uploadProgress">
+              <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+              <div class="progress-text" id="progressText">Processing...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Documents Registry -->
+      <div class="tab-panel" id="tab-documents">
+        <div class="dash-card">
+          <div class="card-header-flex" style="margin-bottom: 16px;">
+            <div>
+              <h2 class="card-heading">Ingested Document Registry</h2>
+              <p class="card-subheading">Active PDF filings, page indexes, and extracted fact distributions.</p>
+            </div>
+            <button class="btn btn-primary-sm" id="registryUploadBtn">+ Ingest New PDF</button>
+          </div>
+          <div class="doc-grid" id="docGrid">
+            <div class="empty-state" id="docEmptyState">
+              <div class="empty-icon">📁</div>
+              <h3>No documents ingested yet</h3>
+              <p>Upload PDF files to start extracting facts</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Facts Explorer -->
+      <div class="tab-panel" id="tab-facts">
+        <div class="dash-card">
+          <div class="card-header-flex" style="margin-bottom: 16px;">
+            <div>
+              <h2 class="card-heading">Facts Explorer</h2>
+              <p class="card-subheading">Inspect atomic grounded fact statements extracted across all documents.</p>
+            </div>
+          </div>
+
+          <div class="controls-bar">
+            <input type="text" class="search-input" id="factSearch" placeholder="Search facts by subject, predicate, or value..." />
+            <select class="filter-select" id="factTypeFilter">
+              <option value="">All Types</option>
+              <option value="numerical">Numerical</option>
+              <option value="percentage">Percentage</option>
+              <option value="entity">Entity</option>
+              <option value="categorical">Categorical</option>
+            </select>
+            <select class="filter-select" id="factDocFilter">
+              <option value="">All Documents</option>
+            </select>
+          </div>
+
+          <div class="fact-list" id="factList">
+            <div class="empty-state">
+              <div class="empty-icon">🔍</div>
+              <h3>No facts extracted yet</h3>
+              <p>Upload PDFs to extract facts</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: Relationships -->
+      <div class="tab-panel" id="tab-relationships">
+        <div class="dash-card">
+          <div class="card-header-flex" style="margin-bottom: 16px;">
+            <div>
+              <h2 class="card-heading">Cross-Document Relationships</h2>
+              <p class="card-subheading">Corroborations, contradictions, and contextual reconciliations linked across sources.</p>
+            </div>
+          </div>
+
+          <div class="rel-filters" id="relFilters">
+            <button class="rel-filter-btn active" data-filter="all">All Relationships</button>
+            <button class="rel-filter-btn corroboration" data-filter="corroboration">🟢 Corroborations</button>
+            <button class="rel-filter-btn contradiction" data-filter="contradiction">🔴 Contradictions</button>
+            <button class="rel-filter-btn reconciliation" data-filter="reconciliation">🟣 Reconciliations</button>
+          </div>
+
+          <div class="rel-list" id="relList">
+            <div class="empty-state">
+              <div class="empty-icon">🔗</div>
+              <h3>No relationships detected</h3>
+              <p>Upload multiple documents to find cross-document relationships</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: Evidence Graph (Full View) -->
+      <div class="tab-panel" id="tab-graph">
+        <div class="dash-card">
+          <div class="card-header-flex" style="margin-bottom: 16px;">
+            <div>
+              <h2 class="card-heading">Evidence Relationship Graph</h2>
+              <p class="card-subheading">Interactive visual graph connecting documents, facts, and cross-source evidence links.</p>
+            </div>
+          </div>
+
+          <div class="graph-container">
+            <div class="graph-controls">
+              <div class="graph-filters">
+                <button class="graph-filter-btn active" data-graph-filter="all">All Relationships</button>
+                <button class="graph-filter-btn corr" data-graph-filter="corroboration">🟢 Corroborations</button>
+                <button class="graph-filter-btn contra" data-graph-filter="contradiction">🔴 Contradictions</button>
+                <button class="graph-filter-btn recon" data-graph-filter="reconciliation">🟣 Reconciliations</button>
+              </div>
+              <div class="graph-zoom-toolbar">
+                <button class="graph-btn-zoom" id="graphZoomOut" title="Zoom Out / Make Smaller (-)">−</button>
+                <span class="graph-zoom-label" id="graphZoomLevel">100%</span>
+                <button class="graph-btn-zoom" id="graphZoomIn" title="Zoom In / Enlarge (+)">+</button>
+                <button class="graph-btn-zoom reset-btn" id="graphZoomReset" title="Reset Zoom">⟲ Reset</button>
+              </div>
+              <div class="graph-legend">
+                <span class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span> Document</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#10b981;"></span> Fact</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span> Corroboration</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span> Contradiction</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#a855f7;"></span> Reconciliation</span>
+              </div>
+            </div>
+            <div class="graph-canvas-wrap" id="graphCanvasWrap">
+              <canvas id="graphCanvas" width="1160" height="580"></canvas>
+              <div class="graph-floating-controls">
+                <button class="floating-zoom-btn" id="floatZoomIn" title="Zoom In / Enlarge (+)">+</button>
+                <div class="floating-zoom-badge" id="floatZoomLevel">100%</div>
+                <button class="floating-zoom-btn" id="floatZoomOut" title="Zoom Out / Make Smaller (−)">−</button>
+                <button class="floating-zoom-btn reset" id="floatZoomReset" title="Fit & Reset (⤢)">⤢</button>
+              </div>
+              <div class="graph-tooltip" id="graphTooltip"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 7: Failures / Issues -->
+      <div class="tab-panel" id="tab-failures">
+        <div class="dash-card">
+          <h2 class="card-heading" style="margin-bottom: 6px;">Extraction Failures & Edge Cases</h2>
+          <p class="card-subheading" style="margin-bottom: 20px;">Logged ambiguities, ungrounded figures, and edge cases handled safely by the engine.</p>
+          <div id="failureList">
+            <div class="empty-state">
+              <div class="empty-icon">✨</div>
+              <h3>No extraction failures logged</h3>
+              <p>Failures and edge cases will appear here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 8: Settings -->
+      <div class="tab-panel" id="tab-settings">
+        <div class="dash-card">
+          <h2 class="card-heading" style="margin-bottom: 6px;">System Configuration</h2>
+          <p class="card-subheading" style="margin-bottom: 20px;">Fact Knowledge Layer settings and runtime diagnostics.</p>
+          <div class="settings-grid">
+            <div class="setting-item">
+              <div class="setting-label">Extraction Engine</div>
+              <div class="setting-val">Deterministic Regex + Multi-Modal PDF Layout Parser</div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-label">Confidence Scoring</div>
+              <div class="setting-val">Weighted Evidence Confidence (7 Quality Factors)</div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-label">Database Storage</div>
+              <div class="setting-val">SQLite 3 Persistence (Zero External Dependencies)</div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-label">Evidence Grounding</div>
+              <div class="setting-val">Post-Generation Deterministic Validator</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">Processing PDF...</div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Hidden Fallback Verbatim Evidence container for API compatibility -->
+  <div id="ragEvidenceList" style="display:none;"></div>
+  <span id="ragEvidenceCount" style="display:none;">0</span>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
