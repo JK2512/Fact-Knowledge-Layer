@@ -4,11 +4,8 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-green.svg)](https://fastapi.tiangolo.com/)
 [![SQLite](https://img.shields.io/badge/Database-SQLite-lightgrey.svg)](https://sqlite.org/)
-[![Status](https://img.shields.io/badge/Tests-25%2F25%20Passed-brightgreen.svg)]()
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render.com-brightgreen.svg)](https://fact-knowledge-layer-v3ug.onrender.com/)
+[![Status](https://img.shields.io/badge/Tests-27%2F27%20Passed-brightgreen.svg)]()
 [![Offline Mode](https://img.shields.io/badge/Offline%20Mode-100%25%20Supported-success.svg)]()
-
-> 🌐 **Live Deployed Web Application**: [https://fact-knowledge-layer-v3ug.onrender.com/](https://fact-knowledge-layer-v3ug.onrender.com/)
 
 The **Fact Knowledge Layer (FKL)** is an evidence-grounded knowledge intelligence platform designed to extract, normalize, link, and reconcile facts across heterogeneous PDF documents. It replaces non-deterministic vector similarity with deterministic entity-metric relationship linking, an interactive **Evidence Relationship Graph**, **Hybrid Retrieval** (Structured SQL + Lexical BM25), a **Contradiction-Aware RAG Engine**, and **Deterministic Post-Generation Evidence Validation**.
 
@@ -58,7 +55,7 @@ python run_demo.py
 ```
 
 ### 4. Execute Automated Unit & Integration Tests
-Execute the complete test suite (**25 automated unit & integration tests** covering multi-modal parsing, hybrid retrieval, confidence scoring, RAG cases, incremental linking, evidence validation, and REST API endpoints):
+Execute the complete test suite (**27 automated unit & integration tests** covering multi-modal parsing, hybrid retrieval, confidence scoring, RAG cases, production database bootstrapping, incremental linking, evidence validation, and REST API endpoints):
 ```bash
 python -m unittest discover tests/ -v
 ```
@@ -80,6 +77,8 @@ docker run -p 8000:8000 fact-knowledge-layer
 
 #### Option C: 1-Click Cloud Deployment (Render / Railway / Hugging Face)
 The repository includes a `render.yaml` configuration. Connect your GitHub repository to [Render.com](https://render.com) for instant free cloud hosting.
+
+> 💡 **Automatic Starter Dataset Bootstrapping**: The deployed application automatically bootstraps the provided starter PDFs into an empty SQLite database on first startup. Additional PDFs can then be uploaded incrementally through the UI/API.
 
 ---
 
@@ -253,7 +252,7 @@ The single-page web interface (`http://localhost:8000`) is organized into 5 dedi
 
 ---
 
-## 🧪 Automated Test Suite (25 Tests)
+## 🧪 Automated Test Suite (27 Tests)
 
 Run the full automated test suite:
 ```bash

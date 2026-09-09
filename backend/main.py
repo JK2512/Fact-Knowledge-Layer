@@ -54,11 +54,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from backend.bootstrap import bootstrap_database_if_empty
+
 # Initialize database on startup
 @app.on_event("startup")
 def startup():
     init_db()
     logger.info("Database initialized. Extraction mode: %s", get_extraction_mode())
+    bootstrap_database_if_empty(_process_pdf)
 
 # ── Static files ───────────────────────────────────────────────────────────────
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
