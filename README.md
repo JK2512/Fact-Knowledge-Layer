@@ -13,7 +13,7 @@ The **Fact Knowledge Layer (FKL)** is an evidence-grounded knowledge intelligenc
 
 ## 📹 Video Demo
 
-> 🎬 **Demo Video (3 Minutes or Less)**: [Insert Your YouTube / Loom Video Link Here]
+> 🎬 **Demo Video (3 Minutes or Less)**: https://youtu.be/pXw_6FLeDiY
 
 The demo video showcases:
 1. **Live PDF Ingestion** via the Web UI & REST API (`/api/upload`) with high-speed text/table parsing, metric normalization, and incremental graph updates without rebuilding existing knowledge.
