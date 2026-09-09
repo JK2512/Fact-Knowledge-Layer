@@ -13,7 +13,7 @@ The **Fact Knowledge Layer (FKL)** is an evidence-grounded knowledge intelligenc
 
 ## 📹 Video Demo
 
-> 🎬 **Demo Video (3 Minutes or Less)**: https://youtu.be/pXw_6FLeDiY
+> 🎬 **Demo Video**: https://youtu.be/pXw_6FLeDiY
 
 The demo video showcases:
 1. **Live PDF Ingestion** via the Web UI & REST API (`/api/upload`) with high-speed text/table parsing, metric normalization, and incremental graph updates without rebuilding existing knowledge.
@@ -147,6 +147,17 @@ The repository includes a `render.yaml` configuration. Connect your GitHub repos
                            ↓
                Evidence-Backed Answer
 ```
+## Images
+<img width="959" height="472" alt="Screenshot 2026-09-09 060803" src="https://github.com/user-attachments/assets/a103f8e6-83cf-4a28-b1ba-c97146828e45" />
+<img width="697" height="317" alt="image" src="https://github.com/user-attachments/assets/d0c7de69-8877-411c-99b7-d644b7da9f2e" />
+<img width="673" height="317" alt="image" src="https://github.com/user-attachments/assets/8f93e9c5-5d65-465c-8c90-8c3c78b0fcbb" />
+<img width="863" height="398" alt="Screenshot 2026-09-09 070813" src="https://github.com/user-attachments/assets/aa7abf14-4cc3-4656-bdd4-1ca7e1aff29a" />
+<img width="680" height="260" alt="image" src="https://github.com/user-attachments/assets/9d8a1ec0-7927-4b6d-9b07-49d187091254" />
+
+<img width="689" height="297" alt="image" src="https://github.com/user-attachments/assets/c557937e-3878-486e-9310-0710f2f6f655" />
+
+
+
 
 ---
 
