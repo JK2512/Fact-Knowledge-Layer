@@ -267,4 +267,4 @@ python -m unittest discover tests/ -v
 
 - **Zero API Key Requirement**: To test the platform without an API key, run `python run_demo.py` or launch the UI; the system seamlessly defaults to high-accuracy offline deterministic synthesis.
 - **Repository Link**: [https://github.com/JK2512/Fact-Knowledge-Layer](https://github.com/JK2512/Fact-Knowledge-Layer)
-- **Submission Form**: [Superjoin Submission Form](https://forms.gle/3fLdBQ2D6Zm2Gqtv7)
+
