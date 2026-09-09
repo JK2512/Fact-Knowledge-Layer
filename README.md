@@ -5,7 +5,10 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-green.svg)](https://fastapi.tiangolo.com/)
 [![SQLite](https://img.shields.io/badge/Database-SQLite-lightgrey.svg)](https://sqlite.org/)
 [![Status](https://img.shields.io/badge/Tests-25%2F25%20Passed-brightgreen.svg)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render.com-brightgreen.svg)](https://fact-knowledge-layer-v3ug.onrender.com/)
 [![Offline Mode](https://img.shields.io/badge/Offline%20Mode-100%25%20Supported-success.svg)]()
+
+> 🌐 **Live Deployed Web Application**: [https://fact-knowledge-layer-v3ug.onrender.com/](https://fact-knowledge-layer-v3ug.onrender.com/)
 
 The **Fact Knowledge Layer (FKL)** is an evidence-grounded knowledge intelligence platform designed to extract, normalize, link, and reconcile facts across heterogeneous PDF documents. It replaces non-deterministic vector similarity with deterministic entity-metric relationship linking, an interactive **Evidence Relationship Graph**, **Hybrid Retrieval** (Structured SQL + Lexical BM25), a **Contradiction-Aware RAG Engine**, and **Deterministic Post-Generation Evidence Validation**.
 
