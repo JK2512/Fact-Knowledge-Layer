@@ -60,6 +60,24 @@ Execute the complete test suite (**25 automated unit & integration tests** cover
 python -m unittest discover tests/ -v
 ```
 
+### 5. Docker & Containerized Deployment
+
+#### Option A: 1-Command Docker Compose
+Run the containerized application locally or on any server with Docker installed:
+```bash
+docker-compose up --build
+```
+Access the application at `http://localhost:8000`.
+
+#### Option B: Build & Run Docker Container Manually
+```bash
+docker build -t fact-knowledge-layer .
+docker run -p 8000:8000 fact-knowledge-layer
+```
+
+#### Option C: 1-Click Cloud Deployment (Render / Railway / Hugging Face)
+The repository includes a `render.yaml` configuration. Connect your GitHub repository to [Render.com](https://render.com) for instant free cloud hosting.
+
 ---
 
 ## 🧠 Approach & Architecture

@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  fact-knowledge-layer:
+    build: .
+    container_name: fact_knowledge_layer
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
